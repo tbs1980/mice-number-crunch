@@ -184,11 +184,11 @@ class converter:
                 self.G1_ninv[pix] = float(self.g[pix]-1.)/self.G1_ninv[pix]
                 self.G2_ninv[pix] = float(self.g[pix]-1.)/self.G2_ninv[pix]
             else :
-                self.g[pix] = hp.pixelfunc.UNSEEN
-                self.G1[pix] = hp.pixelfunc.UNSEEN
-                self.G2[pix] = hp.pixelfunc.UNSEEN
-                self.G1_ninv[pix] = hp.pixelfunc.UNSEEN
-                self.G2_ninv[pix] = hp.pixelfunc.UNSEEN
+                self.g[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G1[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G2[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G1_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G2_ninv[pix] = 0#hp.pixelfunc.UNSEEN
 
         end_time = time.time()
 
