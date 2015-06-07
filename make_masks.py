@@ -3,7 +3,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 
 
-for res in ["512","1024","2048"]:
+for res in ["4096"]:
     n_inv_file_name = "/resource/data/MICE/maps/"+res+"/mice_v2_0_shear_g_ninv.fits"
     print "reading",n_inv_file_name
 
