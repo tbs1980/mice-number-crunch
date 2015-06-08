@@ -2,7 +2,8 @@ import numpy as np
 import healpy as hp
 
 #res = "2048"
-res = "512"
+#res = "512"
+res = "4096"
 
 input_data_prefix = "/resource/data/MICE/maps/"
 output_data_prefix = "/arxiv/projects/MICEDataAnalysis/ForEuclidMeetingLausanne/spice_pcl_analysis/"
