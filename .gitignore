@@ -57,3 +57,5 @@ docs/_build/
 target/
 
 *.fits
+*~
+run_slinter_jobs/
