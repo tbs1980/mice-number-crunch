@@ -9,17 +9,20 @@ class converter:
     A class for coverting galaxy catalogues to healpix maps
     """
 
-    def __init__(self,file_name,col_ra,col_dec,col_gamma_1,col_gamma_2,n_side):
+    def __init__(self,file_name,col_ra,col_dec,col_z,col_gamma_1,col_gamma_2,n_side,z_bounds):
         """
         A constructor for creating a catalogue to HEALPix map converter. (ra,dec)
         coordinates are assumed to be in degrees.
 
         @param file_name file name of the input catalogue
         @param col_ra column number of right angle
+        @param col_z column number of the z
         @param col_dec column number of declination
         @param col_gamma_1 column number of ellipticity 1
         @param col_gamma_2 column number of ellipticity 2
         @param n_side number sides of the HEALPix map
+        @param z_bounds boundaries of the z
+
         """
 
         # save the input params
@@ -29,6 +32,15 @@ class converter:
         self.col_gamma_1 = col_gamma_1
         self.col_gamma_2 = col_gamma_2
         self.n_side = n_side
+        self.col_z = col_z
+        self.z_bounds = z_bounds
+
+        if len(z_bounds) != 2 :
+            raise RuntimeError("We were expecting a list of two numbers for the bounds")
+        if z_bounds[0] < 0 :
+            raise RuntimeError("Z min cannot be a negative number")
+        if z_bounds[0]> z_bounds[1]:
+            raise RuntimeError("Z min should be less than Z max")
 
         # start a logger
         logging.basicConfig(level=logging.INFO)
@@ -138,30 +150,33 @@ class converter:
                 # get the ra,dec,etc from the entries
                 ra_val = float(ents[self.col_ra])
                 dec_val = float(ents[self.col_dec])
+                z_val = float(ents[self.col_z])
                 G1_val = float(ents[self.col_gamma_1])
                 G2_val = float(ents[self.col_gamma_2])
 
-                # convert (ra,dec) -> (theta,phi)
-                theta = -deg2rad*dec_val + np.pi/2.
-                phi = deg2rad*(ra_val - 180.)
+                # check if we fall in the correct bin
+                if z_val >= self.z_bounds[0] and z_val < self.z_bounds[1] :
+                    # convert (ra,dec) -> (theta,phi)
+                    theta = -deg2rad*dec_val + np.pi/2.
+                    phi = deg2rad*(ra_val - 180.)
 
 
-                try:
-                    pix = hp.ang2pix(self.n_side,theta,phi)
-                    # increase the object count in the pixel
-                    self.g[pix] += 1
+                    try:
+                        pix = hp.ang2pix(self.n_side,theta,phi)
+                        # increase the object count in the pixel
+                        self.g[pix] += 1
 
-                    delta1 = G1_val - self.G1[pix]
-                    self.G1[pix] += delta1/float(self.g[pix])
-                    self.G1_ninv[pix] += delta1*(G1_val - self.G1[pix])
+                        delta1 = G1_val - self.G1[pix]
+                        self.G1[pix] += delta1/float(self.g[pix])
+                        self.G1_ninv[pix] += delta1*(G1_val - self.G1[pix])
 
-                    delta2 = G2_val - self.G2[pix]
-                    self.G2[pix] += delta2/float(self.g[pix])
-                    self.G2_ninv[pix] += delta2*(G2_val - self.G2[pix])
-                except:
-                    #log_str = " Unexpected value of theta = " + str(theta) + " for #object " + str(i)
-                    #self.logger.info(log_str)
-                    pass
+                        delta2 = G2_val - self.G2[pix]
+                        self.G2[pix] += delta2/float(self.g[pix])
+                        self.G2_ninv[pix] += delta2*(G2_val - self.G2[pix])
+                    except:
+                        #log_str = " Unexpected value of theta = " + str(theta) + " for #object " + str(i)
+                        #self.logger.info(log_str)
+                        pass
 
                 # 500,000,000
                 #if i >= 1e8:
