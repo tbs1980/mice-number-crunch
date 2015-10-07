@@ -223,11 +223,11 @@ class converter:
 
         file_tag = os.path.split(output_path)[1]
 
-        g_file_name = os.path.join(dir_name,str(file_tag)+"_g_data.fits")
-        hp.write_map(g_file_name,self.g)
+        #g_file_name = os.path.join(dir_name,str(file_tag)+"_g_data.fits")
+        #hp.write_map(g_file_name,self.g)
 
-        g_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_g_ninv.fits")
-        hp.write_map(g_ninv_file_name,self.g_ninv)
+        #g_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_g_ninv.fits")
+        #hp.write_map(g_ninv_file_name,self.g_ninv)
 
         G_file_name = os.path.join(dir_name,str(file_tag)+"_G_data.fits")
         hp.write_map(G_file_name,m=[self.G1,self.G2])
@@ -235,11 +235,11 @@ class converter:
         G_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_G_ninv.fits")
         hp.write_map(G_ninv_file_name,m=[self.G1_ninv,self.G2_ninv])
 
-        gG_file_name = os.path.join(dir_name,str(file_tag)+"_gG_data.fits")
-        hp.write_map(gG_file_name,m=[self.g,self.G1,self.G2])
+        #gG_file_name = os.path.join(dir_name,str(file_tag)+"_gG_data.fits")
+        #hp.write_map(gG_file_name,m=[self.g,self.G1,self.G2])
 
-        gG_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_gG_ninv.fits")
-        hp.write_map(gG_ninv_file_name,m=[self.g_ninv,self.G1_ninv,self.G2_ninv])
+        #gG_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_gG_ninv.fits")
+        #hp.write_map(gG_ninv_file_name,m=[self.g_ninv,self.G1_ninv,self.G2_ninv])
 
     def write_png_maps(self,output_path):
         """
