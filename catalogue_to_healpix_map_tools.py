@@ -9,7 +9,7 @@ class converter:
     A class for coverting galaxy catalogues to healpix maps
     """
 
-    def __init__(self,file_name,col_ra,col_dec,col_z,col_gamma_1,col_gamma_2,n_side,z_bounds):
+    def __init__(self,file_name,col_ra,col_dec,col_z,col_gamma_1,col_gamma_2,n_side,z_bounds,mask_file_name=None):
         """
         A constructor for creating a catalogue to HEALPix map converter. (ra,dec)
         coordinates are assumed to be in degrees.
@@ -22,6 +22,7 @@ class converter:
         @param col_gamma_2 column number of ellipticity 2
         @param n_side number sides of the HEALPix map
         @param z_bounds boundaries of the z
+        @param mask_file_name file name of the mask in healpix format
 
         """
 
@@ -34,6 +35,7 @@ class converter:
         self.n_side = n_side
         self.col_z = col_z
         self.z_bounds = z_bounds
+        self.mask_file_name = mask_file_name
 
         if len(z_bounds) != 2 :
             raise RuntimeError("We were expecting a list of two numbers for the bounds")
@@ -56,6 +58,15 @@ class converter:
 
 
         self.line_offset = []
+
+        # read the mask
+        if self.mask_file_name != None :
+            self.mask = hp.read_map(mask_file_name)
+        else:
+            self.mask = hp.ones(hp.nside2npix(n_side))
+
+        if self.n_side != hp.npix2nside(len(self.mask)):
+            raise ValueError("Nside of the mask does not agree with the nside for making maps.")
 
 
     def get_num_lines(self):
@@ -140,6 +151,7 @@ class converter:
             # accumulate objects
             i = 0
             for line in f:
+                #print line
                 # get the entries from a line
                 ents = line.split()
 
@@ -156,6 +168,7 @@ class converter:
 
                 # check if we fall in the correct bin
                 if z_val >= self.z_bounds[0] and z_val < self.z_bounds[1] :
+                    #print "zval = ",z_val, "we are inside the bounds"
                     # convert (ra,dec) -> (theta,phi)
                     theta = -deg2rad*dec_val + np.pi/2.
                     phi = deg2rad*(ra_val - 180.)
@@ -163,47 +176,55 @@ class converter:
 
                     try:
                         pix = hp.ang2pix(self.n_side,theta,phi)
-                        # increase the object count in the pixel
-                        self.g[pix] += 1
+                        if self.mask[pix] > 0.:
+                            #print "we have an observed pixel"
+                            # increase the object count in the pixel
+                            self.g[pix] += 1
 
-                        delta1 = G1_val - self.G1[pix]
-                        self.G1[pix] += delta1/float(self.g[pix])
-                        self.G1_ninv[pix] += delta1*(G1_val - self.G1[pix])
+                            delta1 = G1_val - self.G1[pix]
+                            self.G1[pix] += delta1/float(self.g[pix])
+                            self.G1_ninv[pix] += delta1*(G1_val - self.G1[pix])
 
-                        delta2 = G2_val - self.G2[pix]
-                        self.G2[pix] += delta2/float(self.g[pix])
-                        self.G2_ninv[pix] += delta2*(G2_val - self.G2[pix])
+                            delta2 = G2_val - self.G2[pix]
+                            self.G2[pix] += delta2/float(self.g[pix])
+                            self.G2_ninv[pix] += delta2*(G2_val - self.G2[pix])
                     except:
                         #log_str = " Unexpected value of theta = " + str(theta) + " for #object " + str(i)
                         #self.logger.info(log_str)
                         pass
 
                 # 500,000,000
-                #if i >= 1e8:
+                #if i >= 1e3:
                 #    break
 
                 i = i + 1
 
         # find the mean number of galaxies in the catalogue
-        n_bar  = np.mean(self.g[ np.where(self.g>0) ])
+        n_bar  = np.mean(self.g[ np.where(self.mask>0) ])
         log_str = " Mean number of galaxies after accumulation =  " + str(n_bar)
         self.logger.info(log_str)
 
         # var for each pixel = 1/n_bar and n_inv is the iverse of var
-        self.g_ninv[ np.where(self.g>0) ] = 1./n_bar
+        self.g_ninv[ np.where(self.mask>0) ] = 1./n_bar
 
         # compute the inverse variance of shears 1 and 2
         # we require 1/var = 1/sigma^2
-        for pix in range(n_pix):
-            if self.G1_ninv[pix] > 0. and  self.G2_ninv[pix] > 0. :
-                self.G1_ninv[pix] = float(self.g[pix]-1.)/self.G1_ninv[pix]
-                self.G2_ninv[pix] = float(self.g[pix]-1.)/self.G2_ninv[pix]
-            else :
-                self.g[pix] = 0#hp.pixelfunc.UNSEEN
-                self.G1[pix] = 0#hp.pixelfunc.UNSEEN
-                self.G2[pix] = 0#hp.pixelfunc.UNSEEN
-                self.G1_ninv[pix] = 0#hp.pixelfunc.UNSEEN
-                self.G2_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+        #for pix in range(n_pix):
+        #    if self.G1_ninv[pix] > 0. and  self.G2_ninv[pix] > 0. :
+        #        self.G1_ninv[pix] = float(self.g[pix]-1.)/self.G1_ninv[pix]
+        #        self.G2_ninv[pix] = float(self.g[pix]-1.)/self.G2_ninv[pix]
+        #    else :
+        #        self.g[pix] = 0#hp.pixelfunc.UNSEEN
+        #        self.G1[pix] = 0#hp.pixelfunc.UNSEEN
+        #        self.G2[pix] = 0#hp.pixelfunc.UNSEEN
+        #        self.G1_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+        #        self.G2_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+
+        log_str = " Computing the nInv values"
+        self.logger.info(log_str)
+
+        self.G1_ninv[np.where(self.G1_ninv>0.)] = (self.g[np.where(self.G1_ninv>0.)]-1.)/self.G1_ninv[np.where(self.G1_ninv>0.)]
+        self.G2_ninv[np.where(self.G2_ninv>0.)] = (self.g[np.where(self.G2_ninv>0.)]-1.)/self.G2_ninv[np.where(self.G2_ninv>0.)]
 
         end_time = time.time()
 
