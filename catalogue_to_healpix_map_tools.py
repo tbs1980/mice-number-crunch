@@ -68,6 +68,8 @@ class converter:
         if self.n_side != hp.npix2nside(len(self.mask)):
             raise ValueError("Nside of the mask does not agree with the nside for making maps.")
 
+        self.rotation_of_phi = 0.
+
 
     def get_num_lines(self):
         """
@@ -171,7 +173,7 @@ class converter:
                     #print "zval = ",z_val, "we are inside the bounds"
                     # convert (ra,dec) -> (theta,phi)
                     theta = -deg2rad*dec_val + np.pi/2.
-                    phi = deg2rad*(ra_val - 180.)
+                    phi = deg2rad*(ra_val - self.rotation_of_phi)
 
 
                     try:

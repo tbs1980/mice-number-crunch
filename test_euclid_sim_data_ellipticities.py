@@ -6,8 +6,8 @@ def create_maps(n_side,intpu_file_name,z_bounds,mask_file_name,output_path):
     col_ra = 0
     col_dec = 1
     col_z = 2
-    col_gamma_1 = 4
-    col_gamma_2 = 5
+    col_gamma_1 = 6
+    col_gamma_2 = 7
 
 
     if z_bounds[0] >= z_bounds[1] :
