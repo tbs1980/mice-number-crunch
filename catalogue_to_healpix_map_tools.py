@@ -225,8 +225,13 @@ class converter:
         log_str = " Computing the nInv values"
         self.logger.info(log_str)
 
-        self.G1_ninv[np.where(self.G1_ninv>0.)] = (self.g[np.where(self.G1_ninv>0.)]-1.)/self.G1_ninv[np.where(self.G1_ninv>0.)]
-        self.G2_ninv[np.where(self.G2_ninv>0.)] = (self.g[np.where(self.G2_ninv>0.)]-1.)/self.G2_ninv[np.where(self.G2_ninv>0.)]
+        self.G1_ninv[np.where(self.g>1.)] = (self.g[np.where(self.g>1.)]-1.)/self.G1_ninv[np.where(self.g>1.)]
+        self.G2_ninv[np.where(self.g>1.)] = (self.g[np.where(self.g>1.)]-1.)/self.G2_ninv[np.where(self.g>1.)]
+        self.new_mask = self.mask.copy()
+        self.new_mask[np.where(self.g<=1.)] = 0.
+        self.G1[np.where(self.g<=1.)] = 0.
+        self.G2[np.where(self.g<=1.)] = 0.
+        self.g[np.where(self.g<=1.)] = 0.
 
         end_time = time.time()
 
@@ -252,17 +257,20 @@ class converter:
         #g_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_g_ninv.fits")
         #hp.write_map(g_ninv_file_name,self.g_ninv)
 
-        G_file_name = os.path.join(dir_name,str(file_tag)+"_G_data.fits")
-        hp.write_map(G_file_name,m=[self.G1,self.G2])
+        #G_file_name = os.path.join(dir_name,str(file_tag)+"_G_data.fits")
+        #hp.write_map(G_file_name,m=[self.G1,self.G2])
 
-        G_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_G_ninv.fits")
-        hp.write_map(G_ninv_file_name,m=[self.G1_ninv,self.G2_ninv])
+        #G_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_G_ninv.fits")
+        #hp.write_map(G_ninv_file_name,m=[self.G1_ninv,self.G2_ninv])
 
-        #gG_file_name = os.path.join(dir_name,str(file_tag)+"_gG_data.fits")
-        #hp.write_map(gG_file_name,m=[self.g,self.G1,self.G2])
+        gG_file_name = os.path.join(dir_name,str(file_tag)+"_gG_data.fits")
+        hp.write_map(gG_file_name,m=[self.g,self.G1,self.G2])
 
         #gG_ninv_file_name = os.path.join(dir_name,str(file_tag)+"_gG_ninv.fits")
         #hp.write_map(gG_ninv_file_name,m=[self.g_ninv,self.G1_ninv,self.G2_ninv])
+
+        new_mask_file_name = os.path.join(dir_name,str(file_tag)+"_G_new_mask.fits")
+        hp.write_map(new_mask_file_name,m=self.new_mask)
 
     def write_png_maps(self,output_path):
         """
