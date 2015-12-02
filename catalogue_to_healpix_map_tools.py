@@ -9,7 +9,7 @@ class converter:
     A class for coverting galaxy catalogues to healpix maps
     """
 
-    def __init__(self,file_name,col_ra,col_dec,col_z,col_gamma_1,col_gamma_2,n_side,z_bounds,mask_file_name=None):
+    def __init__(self,file_name,col_ra,col_dec,col_z,col_gamma_1,col_gamma_2,n_side,z_bounds,mask_file_name=None,test_map_file_name=None):
         """
         A constructor for creating a catalogue to HEALPix map converter. (ra,dec)
         coordinates are assumed to be in degrees.
@@ -36,6 +36,7 @@ class converter:
         self.col_z = col_z
         self.z_bounds = z_bounds
         self.mask_file_name = mask_file_name
+        self.test_map_file_name = test_map_file_name
 
         if len(z_bounds) != 2 :
             raise RuntimeError("We were expecting a list of two numbers for the bounds")
@@ -64,6 +65,12 @@ class converter:
             self.mask = hp.read_map(mask_file_name)
         else:
             self.mask = hp.ones(hp.nside2npix(n_side))
+
+        if self.test_map_file_name != None :
+            print "reading the test map"
+            self.test_map = hp.read_map(test_map_file_name)
+        else:
+            self.test_map = None
 
         if self.n_side != hp.npix2nside(len(self.mask)):
             raise ValueError("Nside of the mask does not agree with the nside for making maps.")
@@ -178,6 +185,14 @@ class converter:
 
                     try:
                         pix = hp.ang2pix(self.n_side,theta,phi)
+                        #print "pix = ",pix,"test map val= ",self.test_map[pix], "G1 Val = ",G1_val
+                        #print pix,G1_val , test_map[pix]
+                        #print ""
+                        if self.test_map_file_name != None :
+                            #print G1_val , self.test_map[pix]
+                            if abs(G1_val - self.test_map[pix]) > 1e-5  :
+                                #raise ValueError("Value of G1 obtained from catalogue "+str(G1_val)+", does not match the one from test_map "+str(test_map[pix]))
+                                print "Value of G1 obtained from catalogue "+str(G1_val)+", does not match the one from test_map "+str(test_map[pix])
                         if self.mask[pix] > 0.:
                             #print "we have an observed pixel"
                             # increase the object count in the pixel
@@ -196,7 +211,7 @@ class converter:
                         pass
 
                 # 500,000,000
-                #if i >= 1e3:
+                #if i >= 1e6:
                 #    break
 
                 i = i + 1
@@ -211,20 +226,32 @@ class converter:
 
         # compute the inverse variance of shears 1 and 2
         # we require 1/var = 1/sigma^2
-        #for pix in range(n_pix):
-        #    if self.G1_ninv[pix] > 0. and  self.G2_ninv[pix] > 0. :
-        #        self.G1_ninv[pix] = float(self.g[pix]-1.)/self.G1_ninv[pix]
-        #        self.G2_ninv[pix] = float(self.g[pix]-1.)/self.G2_ninv[pix]
-        #    else :
+        self.new_mask = self.mask.copy()
+        for pix in range(n_pix):
+            if self.g[pix]>1. and self.G1_ninv[pix] > 0. and  self.G2_ninv[pix] > 0. :
+                self.G1_ninv[pix] = float(self.g[pix]-1.)/self.G1_ninv[pix]
+                self.G2_ninv[pix] = float(self.g[pix]-1.)/self.G2_ninv[pix]
+                # sanity checks
+                if abs(self.G1[pix] - self.test_map[pix]) > 1e-5 :
+                    #raise ValueError("Value of G1 obtained from G1Map "+str(self.G1_ninv[pix])+", does not match the one from test_map "+str(test_map[pix]))
+                    print "@2 Value of G1 obtained from G1Map "+str(self.G1_ninv[pix])+", does not match the one from test_map "+str(test_map[pix])
+            else :
+                self.new_mask[pix] = 0
         #        self.g[pix] = 0#hp.pixelfunc.UNSEEN
-        #        self.G1[pix] = 0#hp.pixelfunc.UNSEEN
-        #        self.G2[pix] = 0#hp.pixelfunc.UNSEEN
-        #        self.G1_ninv[pix] = 0#hp.pixelfunc.UNSEEN
-        #        self.G2_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G1[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G2[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G1_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+                self.G2_ninv[pix] = 0#hp.pixelfunc.UNSEEN
+
+            # do the sanity check once again
+            if self.new_mask[pix] > 0 :
+                if abs(self.G1[pix] - self.test_map[pix]) > 1e-5:
+                    print "values mismatch ", pix, self.G1[pix], self.test_map[pix]
 
         log_str = " Computing the nInv values"
         self.logger.info(log_str)
 
+        """
         self.G1_ninv[np.where(self.g>1.)] = (self.g[np.where(self.g>1.)]-1.)/self.G1_ninv[np.where(self.g>1.)]
         self.G2_ninv[np.where(self.g>1.)] = (self.g[np.where(self.g>1.)]-1.)/self.G2_ninv[np.where(self.g>1.)]
         self.new_mask = self.mask.copy()
@@ -232,6 +259,7 @@ class converter:
         self.G1[np.where(self.g<=1.)] = 0.
         self.G2[np.where(self.g<=1.)] = 0.
         self.g[np.where(self.g<=1.)] = 0.
+        """
 
         end_time = time.time()
 
