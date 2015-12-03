@@ -25,6 +25,7 @@ def create_maps(n_side,intpu_file_name,z_bounds,mask_file_name,output_path,test_
 
 
 if __name__ == "__main__":
+    print "number of arguments is ",len(sys.argv)
     if len(sys.argv) == 8 :
         start_time = time.time()
         
@@ -40,6 +41,24 @@ if __name__ == "__main__":
         
         create_maps(n_side,intpu_file_name,z_bounds,mask_file_name,output_path,test_map_file_name)
         
+        print ""
+        print (time.time() - start_time) / 60.0, 'minutes'
+    elif len(sys.argv) == 7 :
+        # in this case we don't have the test map
+        start_time = time.time()
+
+        n_side = int(sys.argv[1])
+        intpu_file_name = sys.argv[2]
+        z_bounds_start = float(sys.argv[3])
+        z_bounds_end = float(sys.argv[4])
+        mask_file_name = sys.argv[5]
+        output_path = sys.argv[6]
+
+        z_bounds = [z_bounds_start,z_bounds_end]
+
+        test_map_file_name =  None
+        create_maps(n_side,intpu_file_name,z_bounds,mask_file_name,output_path,test_map_file_name)
+
         print ""
         print (time.time() - start_time) / 60.0, 'minutes'
     else:

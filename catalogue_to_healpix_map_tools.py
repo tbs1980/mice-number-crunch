@@ -232,7 +232,7 @@ class converter:
                 self.G1_ninv[pix] = float(self.g[pix]-1.)/self.G1_ninv[pix]
                 self.G2_ninv[pix] = float(self.g[pix]-1.)/self.G2_ninv[pix]
                 # sanity checks
-                if abs(self.G1[pix] - self.test_map[pix]) > 1e-5 :
+                if self.test_map_file_name != None and abs(self.G1[pix] - self.test_map[pix]) > 1e-5 :
                     #raise ValueError("Value of G1 obtained from G1Map "+str(self.G1_ninv[pix])+", does not match the one from test_map "+str(test_map[pix]))
                     print "@2 Value of G1 obtained from G1Map "+str(self.G1_ninv[pix])+", does not match the one from test_map "+str(test_map[pix])
             else :
@@ -251,15 +251,7 @@ class converter:
         log_str = " Computing the nInv values"
         self.logger.info(log_str)
 
-        """
-        self.G1_ninv[np.where(self.g>1.)] = (self.g[np.where(self.g>1.)]-1.)/self.G1_ninv[np.where(self.g>1.)]
-        self.G2_ninv[np.where(self.g>1.)] = (self.g[np.where(self.g>1.)]-1.)/self.G2_ninv[np.where(self.g>1.)]
-        self.new_mask = self.mask.copy()
-        self.new_mask[np.where(self.g<=1.)] = 0.
-        self.G1[np.where(self.g<=1.)] = 0.
-        self.G2[np.where(self.g<=1.)] = 0.
-        self.g[np.where(self.g<=1.)] = 0.
-        """
+
 
         end_time = time.time()
 
