@@ -245,7 +245,7 @@ class converter:
 
             # do the sanity check once again
             if self.new_mask[pix] > 0 :
-                if abs(self.G1[pix] - self.test_map[pix]) > 1e-5:
+                if self.test_map_file_name != None and abs(self.G1[pix] - self.test_map[pix]) > 1e-5:
                     print "values mismatch ", pix, self.G1[pix], self.test_map[pix]
 
         log_str = " Computing the nInv values"
