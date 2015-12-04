@@ -189,11 +189,11 @@ class converter:
                         #print "pix = ",pix,"test map val= ",self.test_map[pix], "G1 Val = ",G1_val
                         #print pix,G1_val , test_map[pix]
                         #print ""
-                        #if self.test_map_file_name != None :
+                        if self.test_map_file_name != None :
                             #print G1_val , self.test_map[pix]
-                        #    if abs(G1_val - self.test_map[pix]) > 1e-5  :
+                            if abs(G1_val - self.test_map[pix]) > 1e-5  :
                                 #raise ValueError("Value of G1 obtained from catalogue "+str(G1_val)+", does not match the one from test_map "+str(self.test_map[pix]))
-                        #        print "Value of G1 obtained from catalogue "+str(G1_val)+", does not match the one from test_map "+str(self.test_map[pix])
+                                print "Value of G1 obtained from catalogue "+str(G1_val)+", does not match the one from test_map "+str(self.test_map[pix])
 
                         if self.mask[pix] > 0.:
                             #print "we have an observed pixel"
@@ -236,7 +236,7 @@ class converter:
                 # sanity checks
                 if self.test_map_file_name != None and abs(self.G1[pix] - self.test_map[pix]) > 1e-5 :
                     #raise ValueError("Value of G1 obtained from G1Map "+str(self.G1_ninv[pix])+", does not match the one from test_map "+str(test_map[pix]))
-                    print "@2 Value of G1 obtained from G1Map "+str(self.G1_ninv[pix])+", does not match the one from test_map "+str(self.test_map[pix])
+                    print "@2 Value of G1 obtained from G1Map "+str(self.G1[pix])+", does not match the one from test_map "+str(self.test_map[pix])
             else :
                 self.new_mask[pix] = 0
         #        self.g[pix] = 0#hp.pixelfunc.UNSEEN
